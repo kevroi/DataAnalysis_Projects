@@ -1,0 +1,5 @@
+Source:
+https://eclipse.gsfc.nasa.gov/SEpubs/5MCSE.html
+
+Data Source:
+https://eclipse.gsfc.nasa.gov/5MCSE/5MCSEcatalog.txt
