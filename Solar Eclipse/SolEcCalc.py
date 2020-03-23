@@ -29,4 +29,13 @@ width = 10
 height = 10
 plt.figure(figsize=(width, height))
 sns.regplot(x='Long.', y='Lat.', data=df)  # this only works with seaborn 0.9
+#plt.show()
+#color code the longer solar eclipse?
+
+#to inversitgate the distributionof eclipses by long and lat
+plt.figure(figsize=(width, height))
+sns.distplot( df['Long.'] , color="skyblue", label='Longitude')
+sns.distplot( df['Lat.'] , color="red", label='Latitude')
+plt.legend()
 plt.show()
+
