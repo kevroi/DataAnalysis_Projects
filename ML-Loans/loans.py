@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.ticker import NullFormatter
 from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
 
 
 path = "loan_train.csv" # load training data
@@ -65,3 +67,27 @@ Feature = df[['Principal','terms','age','Gender','weekend']] # create a 'sub dat
 Feature = pd.concat([Feature,pd.get_dummies(df['education'])], axis=1)
 Feature.drop(['Master or Above'], axis = 1,inplace=True)
 #print(Feature.head()) # check if we've appended these binary variables to the sub dataframe 'Feature'
+
+# To normalise this one hot encoded Feature sub dataframe
+X = Feature
+X = preprocessing.StandardScaler().fit(X).transform(X) # standardise to mean of 0 and variance of 1
+# print(X[0:5]) # to view the first 5 rows of standardised data
+
+
+# K NEAREST NEIGHBOUR CLASSIFICATION
+y = df['loan_status'].values # get our labels of attributes of interest
+# to find the best K, split the training data into training and testing subsets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=4)
+
+Ks = 15 #   test 1 to 14 nearest neighbours
+mean_acc = np.zeros(Ks-1) # mean accuracy
+std_acc = np.zeros(Ks-1) # standard deviation of accuracy
+for n in range(1, Ks):
+    kNN_test_model = KNeighborsClassifier(n_neighbors=n).fit(X_train, y_train)
+    yhat = kNN_test_model.predict(X_test)
+    mean_acc[n-1] = np.mean(yhat==y_test)
+    std_acc[n-1] = np.std(yhat==y_test)/np.sqrt(yhat.shape[0])
+# print(mean_acc) # to see our mean accuracy for each value of k
+k = np.argmax(mean_acc) + 1 # choose k to be the index of the max element in the array
+kNN_model = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
+# print(kNN_model) #check if it works
