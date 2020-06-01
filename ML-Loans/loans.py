@@ -8,6 +8,12 @@ from matplotlib.ticker import NullFormatter
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import svm
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import jaccard_score
+from sklearn.metrics import f1_score
+from sklearn.metrics import log_loss
 
 
 path = "loan_train.csv" # load training data
@@ -91,3 +97,67 @@ for n in range(1, Ks):
 k = np.argmax(mean_acc) + 1 # choose k to be the index of the max element in the array
 kNN_model = KNeighborsClassifier(n_neighbors=k).fit(X_train, y_train)
 # print(kNN_model) #check if it works
+
+
+# DECISION TREE CLASSIFICATION
+DT_model = DecisionTreeClassifier(criterion="entropy", max_depth = 4)
+DT_model.fit(X_train,y_train)
+yhat = DT_model.predict(X_test)
+#print(DT_model) # check if it works
+
+
+# SUPPORT VECTOR MACHINE CLASSIFICATION
+SVM_model = svm.SVC()
+SVM_model.fit(X_train, y_train)
+yhat = SVM_model.predict(X_test)
+
+
+# LOGISTIC REGRESSION CLASSIFICATION
+LR_model = LogisticRegression(C=0.01).fit(X_train,y_train)
+yhat = LR_model.predict(X_test)
+
+
+# EVALUATE CLASSIFICATION MODELS USING NEW TESTING SET
+test_df = pd.read_csv('loan_test.csv') # load in testing set
+
+# covert into right data types
+test_df['due_date'] = pd.to_datetime(test_df['due_date'])
+test_df['effective_date'] = pd.to_datetime(test_df['effective_date'])
+
+# Pre-process the testing set
+test_df['dayofweek'] = test_df['effective_date'].dt.dayofweek
+test_df['weekend'] = test_df['dayofweek'].apply(lambda x: 1 if (x>3)  else 0) # FEATURE BINARISATION to set threshold for which day of week counts as weekend
+
+test_df['Gender'].replace(to_replace=['male','female'], value=[0,1],inplace=True) # turn gender into Boolean
+
+test_Feature = test_df[['Principal','terms','age','Gender','weekend']] # ONE HOT ENCODING on feature set
+test_Feature = pd.concat([test_Feature,pd.get_dummies(test_df['education'])], axis=1)
+test_Feature.drop(['Master or Above'], axis = 1,inplace=True)
+
+test_X = preprocessing.StandardScaler().fit(test_Feature).transform(test_Feature) # Normalise data
+
+test_y = test_df['loan_status'].values # set dependent variable aka what we're predicting/classifying
+
+# Run each model on the pre-processed testing set
+res_matrix = np.empty((4,3))
+res_matrix[:] = np.nan
+
+knn_yhat = kNN_model.predict(test_X)
+res_matrix[0][0] = jaccard_score(test_y, knn_yhat, average='weighted')
+res_matrix[0][1] = f1_score(test_y, knn_yhat, average='weighted')
+
+DT_yhat = DT_model.predict(test_X)
+res_matrix[1][0] = jaccard_score(test_y, DT_yhat, average='weighted')
+res_matrix[1][1] = f1_score(test_y, DT_yhat, average='weighted')
+
+SVM_yhat = SVM_model.predict(test_X)
+res_matrix[2][0] = jaccard_score(test_y, SVM_yhat, average='weighted')
+res_matrix[2][1] = f1_score(test_y, SVM_yhat, average='weighted')
+
+LR_yhat = LR_model.predict(test_X)
+LR_yhat_prob = LR_model.predict_proba(test_X)
+res_matrix[3][0] = jaccard_score(test_y, LR_yhat, average='weighted')
+res_matrix[3][1] = f1_score(test_y, LR_yhat, average='weighted')
+res_matrix[3][2] = log_loss(test_y, LR_yhat_prob)
+
+print(pd.DataFrame(res_matrix, ['K-Nearest Neighbours','Decision Tree','Support Vector Machine', 'Logistic Regression'], ['Jaccard Score', 'F1 Score', 'Cross-Entropy Loss']))
