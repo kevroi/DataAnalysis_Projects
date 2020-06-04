@@ -18,7 +18,6 @@ To install the required libraries into your virtual environment,
 ```
 py -m pipenv install numpy
 py -m pipenv install pandas
-py -m pipenv install itertools
 py -m pipenv install seaborn
 py -m pipenv install matplotlib
 py -m pipenv install sklearn
@@ -26,7 +25,7 @@ py -m pipenv install sklearn
 
 ## Authors
 The Eclipse project is part of my independent research.
-The Machine Learning Student Loans project is based off code I had learnt from an online course.
+The Machine Learning Student Loans project is based off code I had written for an online course.
 
 ## Built with
 * [Python 3.8](https://www.python.org/)
@@ -34,5 +33,4 @@ The Machine Learning Student Loans project is based off code I had learnt from a
 * [Matplotlib](https://matplotlib.org/)
 * [Pandas](https://pandas.pydata.org/)
 * [Seaborn](https://seaborn.pydata.org/)
-* [Itertools](https://docs.python.org/3/library/itertools.html)
 * [Scikit-learn](https://scikit-learn.org/)
